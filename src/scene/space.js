@@ -4,7 +4,7 @@ import { glowTexture } from './effects.js';
 // Everything lives in a group that follows the camera (no parallax, "infinite" distance).
 // Opaque bodies (Earth, Moon) render first and write depth so stars never show through them;
 // the hall draws over them because it is always nearer in depth.
-const STAR_R = 300;
+const STAR_R = 570; // beyond Earth (400 + 110) so stars never draw over it; camera far is 600
 const EARTH_DIST = 400;
 const EARTH_R = 110;
 const MOON_DIST = 170;
