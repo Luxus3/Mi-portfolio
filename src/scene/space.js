@@ -5,8 +5,8 @@ import { glowTexture } from './effects.js';
 // Opaque bodies (Earth, Moon) render first and write depth so stars never show through them;
 // the hall draws over them because it is always nearer in depth.
 const STAR_R = 300;
-const EARTH_DIST = 220;
-const EARTH_R = 130;
+const EARTH_DIST = 400;
+const EARTH_R = 110;
 const MOON_DIST = 170;
 const MOON_R = 28;
 const SUN_DIST = 320;
@@ -193,8 +193,8 @@ varying vec3 vC;
 varying float vA;
 void main() {
   float d = length(gl_PointCoord - 0.5) * 2.0;
-  float a = pow(max(1.0 - d, 0.0), 2.0);
-  gl_FragColor = vec4(vC * a * vA, 1.0);
+  float a = pow(max(1.0 - d, 0.0), 1.2);
+  gl_FragColor = vec4(vC * a * vA * 1.5, 1.0);
 }
 `;
 
@@ -264,9 +264,9 @@ export function buildSpace(scene, { isMobile = false } = {}) {
     const r = Math.sqrt(1 - z * z);
     pos.set([r * Math.cos(ph) * STAR_R, z * STAR_R, r * Math.sin(ph) * STAR_R], i * 3);
     const big = Math.pow(Math.random(), 6);
-    size[i] = 1.8 + big * 4.5;
+    size[i] = 2.8 + big * 6;
     seed[i] = Math.random();
-    const br = 0.55 + 0.45 * Math.random();
+    const br = 0.85 + 0.15 * Math.random();
     tint.copy(cool).lerp(warm, Math.random()).multiplyScalar(br);
     color.set([tint.r, tint.g, tint.b], i * 3);
   }
@@ -330,15 +330,15 @@ export function buildSpace(scene, { isMobile = false } = {}) {
   const glow = glowTexture();
   const sun = new THREE.Group();
   sun.add(
-    lightSprite(glow, 0x7fb8ff, 0.6, 560, -7),
-    lightSprite(glow, 0xffe2b0, 1.3, 190, -6),
-    lightSprite(disc, 0xfff4e0, isMobile ? 1 : 6, 32, -5)
+    lightSprite(glow, 0x7fb8ff, 0.28, 520, -7),
+    lightSprite(glow, 0xffe2b0, 0.65, 170, -6),
+    lightSprite(disc, 0xfff4e0, isMobile ? 1 : 3, 30, -5)
   );
   sky.add(sun);
   const flareSpec = [
-    [0.45, 0x5ee0ff, 0.18, 34],
-    [0.8, 0xffb000, 0.12, 20],
-    [1.25, 0x2f8cff, 0.2, 60]
+    [0.45, 0x5ee0ff, 0.1, 34],
+    [0.8, 0xffb000, 0.07, 20],
+    [1.25, 0x2f8cff, 0.1, 60]
   ];
   const flares = flareSpec.map(([m, hex, op, sz]) => {
     const s = lightSprite(glow, hex, 1, sz, -4);
