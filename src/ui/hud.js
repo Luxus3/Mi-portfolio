@@ -1,7 +1,7 @@
 import { CONTENT } from '../content.js';
 
 const SECTIONS = [
-  { name: 'hero', end: 0.14, label: 'DOOR 00 — ENTRANCE' },
+  { name: 'hero', end: 0.14, label: 'AIRLOCK 00 — ENTRANCE' },
   { name: 'whoami', end: 0.34, label: 'RACK 01/05 — WHOAMI' },
   { name: 'experience', end: 0.52, label: 'RACK 02/05 — EXPERIENCE' },
   { name: 'stack', end: 0.70, label: 'RACK 03/05 — STACK' },
@@ -19,15 +19,21 @@ export function initHud() {
   const fill = document.getElementById('hud-fill');
   const flash = document.getElementById('flash');
   const tk = document.getElementById('tk-text');
+  const pingEl = document.getElementById('hud-ping');
   let current = '';
+  let label = '';
   let alertTimer = 0;
+  let noticeTimer = 0;
+  let noticing = false;
+  let holdUntil = 0;
 
   function update(p) {
     const s = sectionAt(p);
     fill.style.width = (p * 100).toFixed(1) + '%';
     if (s.name !== current) {
       current = s.name;
-      text.textContent = s.label;
+      label = s.label;
+      if (!noticing) text.textContent = label;
     }
     return s.name;
   }
@@ -36,6 +42,25 @@ export function initHud() {
     const t = new Date().toTimeString().slice(0, 8);
     tk.textContent = `${t}  ${msg}`;
     tk.classList.toggle('alert', !!isAlert);
+  }
+
+  // Plain log line in the ticker, kept visible for a while.
+  function log(msg, hold = 4000) {
+    if (!msg || tk.classList.contains('alert')) return;
+    holdUntil = Date.now() + hold;
+    setLog(msg);
+  }
+
+  // Temporary text in the HUD label (e.g. ROOT ACCESS GRANTED).
+  function notice(msg, ms = 4000) {
+    noticing = true;
+    text.textContent = msg;
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => { noticing = false; text.textContent = label; }, ms);
+  }
+
+  function setPing(ms) {
+    if (pingEl) pingEl.textContent = `PING ${Math.round(ms)}ms`;
   }
 
   function alertFx(msg) {
@@ -52,14 +77,25 @@ export function initHud() {
     }, 3000);
   }
 
+  // Decorative orbit counter: one "orbit" every 90 s (a real ISS lap is ~92 min; it's a joke).
+  const orbitEl = document.getElementById('hud-orbit');
+  if (orbitEl) {
+    const t0 = Date.now();
+    setInterval(() => {
+      if (document.hidden) return;
+      const n = 1 + Math.floor((Date.now() - t0) / 90000);
+      orbitEl.textContent = `ALT 408 KM · 7.66 KM/S · ORBIT #${n}`;
+    }, 5000);
+  }
+
   // Rotating fake logs.
   let i = Math.floor(Math.random() * CONTENT.logs.length);
   setLog(CONTENT.logs[i]);
   setInterval(() => {
-    if (document.hidden || tk.classList.contains('alert')) return;
+    if (document.hidden || tk.classList.contains('alert') || Date.now() < holdUntil) return;
     i = (i + 1) % CONTENT.logs.length;
     setLog(CONTENT.logs[i]);
   }, 2600);
 
-  return { update, alertFx };
+  return { update, alertFx, log, notice, setPing };
 }

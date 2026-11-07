@@ -33,16 +33,16 @@ function fit(ctx, text, maxW, size, weight) {
 }
 
 function frame(ctx, tag) {
-  ctx.fillStyle = '#060606';
+  ctx.fillStyle = '#04070d';
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = CSS.red;
+  ctx.strokeStyle = CSS.accent;
   ctx.lineWidth = 6;
   ctx.strokeRect(3, 3, W - 6, H - 6);
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
   ctx.font = font(32, '800');
   const tw = ctx.measureText(tag).width;
-  ctx.fillStyle = CSS.red;
+  ctx.fillStyle = CSS.accent;
   ctx.fillRect(PAD, 24, tw + 36, 50);
   ctx.fillStyle = '#050505';
   ctx.fillText(tag, PAD + 18, 61);
@@ -51,7 +51,7 @@ function frame(ctx, tag) {
   ctx.textAlign = 'right';
   ctx.fillText('guest@lucio.local', W - PAD, 58);
   ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(255,42,31,0.5)';
+  ctx.fillStyle = 'rgba(47,140,255,0.5)';
   ctx.fillRect(PAD, 92, W - PAD * 2, 2);
 }
 
@@ -145,7 +145,7 @@ function drawStack(ctx, t) {
     ctx.fillText(lb, PAD, y + 22);
     ctx.fillStyle = '#121212';
     ctx.fillRect(barX, y, barW, 28);
-    ctx.fillStyle = v > 0.85 ? CSS.red : v > 0.65 ? CSS.amber : CSS.green;
+    ctx.fillStyle = v > 0.85 ? CSS.cyan : v > 0.65 ? CSS.amber : CSS.green;
     const n = Math.floor((barW * v) / 10);
     for (let b = 0; b < n; b++) ctx.fillRect(barX + b * 10, y + 2, 7, 24);
     ctx.fillStyle = CSS.text;
@@ -161,7 +161,7 @@ function drawServices(ctx) {
   let y = 160;
   c.items.forEach((it, i) => {
     ctx.font = font(60, '800');
-    ctx.fillStyle = CSS.red;
+    ctx.fillStyle = CSS.accent;
     ctx.fillText(String(i + 1).padStart(2, '0'), PAD, y + 22);
     ctx.font = font(33, '700');
     ctx.fillStyle = CSS.amber;
@@ -182,7 +182,7 @@ function drawContact(ctx, t) {
   frame(ctx, CONTENT.contact.tag);
   ctx.textAlign = 'center';
   ctx.font = font(120, '800');
-  ctx.fillStyle = CSS.red;
+  ctx.fillStyle = CSS.accent;
   ctx.fillText('CONTACT', W / 2, 300);
   ctx.font = font(44, '600');
   const prompt = '$ ssh guest@lucio.local';
@@ -207,7 +207,9 @@ function makeScreen(draw, aniso, z = null) {
     z,
     last: -1,
     paint(t = 0) {
+      ctx.save();
       draw(ctx, t);
+      ctx.restore();
       scanlines(ctx);
       tex.needsUpdate = true;
       s.last = t;

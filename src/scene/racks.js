@@ -21,7 +21,7 @@ function makeAlertPanel() {
   return {
     tex,
     paint(title, sub, ok) {
-      const col = ok ? CSS.green : CSS.red;
+      const col = ok ? CSS.green : CSS.alert;
       g.fillStyle = ok ? '#021a05' : '#2a0402';
       g.fillRect(0, 0, 256, 160);
       g.strokeStyle = col;
@@ -45,7 +45,7 @@ export function buildRacks(scene, { isMobile, screens }) {
   const col = new THREE.Color();
 
   // --- fill racks (instanced) ---
-  const pitch = isMobile ? 1.9 : 0.95;
+  const pitch = isMobile ? 3.2 : 2.1; // gaps between racks let the exterior show through
   const racks = [];
   for (const s of [-1, 1]) {
     for (let z = L.rackStartZ; z >= L.rackEndZ; z -= pitch) {
@@ -58,7 +58,7 @@ export function buildRacks(scene, { isMobile, screens }) {
   const perRack = UNITS * ledOffsets.length;
   const nLeds = nRacks * perRack;
 
-  const body = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 2.2, 0.9), new THREE.MeshBasicMaterial(), nRacks);
+  const body = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1.9, 0.9), new THREE.MeshBasicMaterial(), nRacks);
   const bars = new THREE.InstancedMesh(new THREE.BoxGeometry(0.04, 0.15, 0.8), new THREE.MeshBasicMaterial(), nRacks * UNITS);
   const ledGeo = new THREE.BoxGeometry(0.02, 0.045, 0.05);
   const leds = new THREE.InstancedMesh(ledGeo, glowMat(0xffffff, 1), nLeds);
@@ -79,16 +79,16 @@ export function buildRacks(scene, { isMobile, screens }) {
   const on = new Uint8Array(nLeds);
   const green = new THREE.Color(COLORS.green);
   const amber = new THREE.Color(COLORS.amber);
-  const red = new THREE.Color(COLORS.red);
+  const alertCol = new THREE.Color(COLORS.alert);
 
   racks.forEach((r, ri) => {
-    dummy.position.set(r.s * 2.5, 1.1, r.z);
+    dummy.position.set(r.s * 2.5, 0.95, r.z);
     dummy.updateMatrix();
     body.setMatrixAt(ri, dummy.matrix);
     const v = 0.004 + Math.random() * 0.008;
-    body.setColorAt(ri, col.setRGB(v, v, v * 1.1));
+    body.setColorAt(ri, col.setRGB(v * 0.8, v, v * 1.5));
     for (let u = 0; u < UNITS; u++) {
-      const y = 0.3 + u * 0.19;
+      const y = 0.25 + u * 0.16;
       dummy.position.set(r.s * 1.98, y, r.z);
       dummy.updateMatrix();
       const bi = ri * UNITS + u;
@@ -104,7 +104,7 @@ export function buildRacks(scene, { isMobile, screens }) {
         dummy.updateMatrix();
         mirror.setMatrixAt(i, dummy.matrix);
         const roll = Math.random();
-        col.copy(roll < 0.55 ? green : roll < 0.85 ? amber : red).multiplyScalar(GAIN);
+        col.copy(roll < 0.65 ? green : amber).multiplyScalar(GAIN);
         base.set([col.r, col.g, col.b], i * 3);
         on[i] = Math.random() < 0.8 ? 1 : 0;
         leds.setColorAt(i, col);
@@ -125,9 +125,9 @@ export function buildRacks(scene, { isMobile, screens }) {
   ledAttr.needsUpdate = true;
 
   // --- section racks with big screens ---
-  const redBar = glowMat(COLORS.red, isMobile ? 1.05 : 3.5);
+  const accentBar = glowMat(COLORS.accent, isMobile ? 0.9 : 3.5);
   const barGeo = new THREE.BoxGeometry(0.06, 0.06, 3.3);
-  const bodyMat = new THREE.MeshBasicMaterial({ color: 0x090909 });
+  const bodyMat = new THREE.MeshBasicMaterial({ color: 0x070b12 });
   const bodyGeo = new THREE.BoxGeometry(1.2, 2.9, 3.4);
   const screenGeo = new THREE.PlaneGeometry(SCREEN_W, SCREEN_H);
   for (const sec of L.sections) {
@@ -135,7 +135,7 @@ export function buildRacks(scene, { isMobile, screens }) {
     m.position.set(sec.side * 2.4, 1.45, sec.z);
     root.add(m);
     for (const y of [0.15, 2.8]) {
-      const b = new THREE.Mesh(barGeo, redBar);
+      const b = new THREE.Mesh(barGeo, accentBar);
       b.position.set(sec.side * 1.78, y, sec.z);
       root.add(b);
     }
@@ -156,7 +156,7 @@ export function buildRacks(scene, { isMobile, screens }) {
   cScreen.position.set(0, 1.65, L.zEnd + 0.51);
   root.add(cScreen);
   for (const y of [0.12, 3.18]) {
-    const b = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.06, 0.06), redBar);
+    const b = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.06, 0.06), accentBar);
     b.position.set(0, y, L.zEnd + 0.52);
     root.add(b);
   }
@@ -167,7 +167,7 @@ export function buildRacks(scene, { isMobile, screens }) {
     new THREE.PlaneGeometry(0.8, 0.5),
     glowMat(0xffffff, 1.5, { map: panel.tex })
   );
-  const glowMatAlert = spillMat(COLORS.red, 0);
+  const glowMatAlert = spillMat(COLORS.alert, 0);
   const glowMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.6), glowMatAlert);
   glowMesh.renderOrder = 3;
   panelMesh.visible = glowMesh.visible = false;
@@ -199,18 +199,84 @@ export function buildRacks(scene, { isMobile, screens }) {
     emit(`ALERT ${name}: ${reason}`);
   }
 
+  // --- ping waves ---
+  let wasFull = false;
+  const PING_SPEED = 40;
+  const PING_LIFE = 1.5;
+  const PING_WIDTH = 3;
+  const PING_GAIN = isMobile ? 2 : 3.5;
+  const cyan = new THREE.Color(COLORS.cyan);
+  const waves = [0, 1, 2].map(() => ({ active: false, t0: 0, side: 1, z0: 0 }));
+
+  function ping(side, camZ, t, emit) {
+    if (!nRacks) return;
+    let w = waves.find((v) => !v.active);
+    if (!w) w = waves.reduce((a, b) => (a.t0 <= b.t0 ? a : b));
+    w.active = true;
+    w.t0 = t;
+    w.side = side;
+    w.z0 = camZ;
+    // rack on that side nearest to where the front will be mid-flight
+    const zt = camZ - PING_SPEED * PING_LIFE * 0.5;
+    let best = 0;
+    let bd = Infinity;
+    for (let ri = 0; ri < nRacks; ri++) {
+      if (racks[ri].s !== side) continue;
+      const d = Math.abs(racks[ri].z - zt);
+      if (d < bd) {
+        bd = d;
+        best = ri;
+      }
+    }
+    const ms = (0.2 + Math.random() * 0.7).toFixed(1);
+    emit(`ping rack-${String(best + 1).padStart(2, '0')}: ${ms}ms`);
+  }
+
+  function fullPass(t) {
+    const a = ledAttr.array;
+    for (let ri = 0; ri < nRacks; ri++) {
+      const r = racks[ri];
+      let k = 0;
+      for (let w = 0; w < 3; w++) {
+        const v = waves[w];
+        if (!v.active || v.side !== r.s) continue;
+        const x = (v.z0 - r.z - (t - v.t0) * PING_SPEED) / PING_WIDTH;
+        if (x > -3 && x < 3) k = Math.max(k, Math.exp(-x * x));
+      }
+      const from = ri * perRack;
+      for (let i = from; i < from + perRack; i++) {
+        const j = i * 3;
+        const v = (on[i] ? 1 : 0.06) * (1 - k);
+        a[j] = base[j] * v + cyan.r * k * PING_GAIN;
+        a[j + 1] = base[j + 1] * v + cyan.g * k * PING_GAIN;
+        a[j + 2] = base[j + 2] * v + cyan.b * k * PING_GAIN;
+      }
+    }
+  }
+
   function update(t) {
+    let nWaves = 0;
+    for (const w of waves) {
+      if (w.active && t - w.t0 > PING_LIFE) w.active = false;
+      if (w.active) nWaves++;
+    }
+    const full = nWaves > 0 || wasFull;
     const flips = isMobile ? 12 : 40;
     for (let k = 0; k < flips && nLeds; k++) {
       const i = (Math.random() * nLeds) | 0;
       on[i] ^= 1;
-      writeLed(i, on[i] ? 1 : 0.06);
+      if (!full) writeLed(i, on[i] ? 1 : 0.06);
+    }
+    if (full) {
+      fullPass(t);
+      // one extra pass after going idle restores the normal look
+      wasFull = nWaves > 0;
     }
     if (alert) {
       const el = t - alert.t0;
       if (alert.state === 'alert') {
         const p = 0.5 + 0.5 * Math.sin(t * 10);
-        setAlertLeds(red, 0.3 + p);
+        setAlertLeds(alertCol, 0.3 + p);
         glowMatAlert.opacity = (0.2 + 0.4 * p) * (isMobile ? 0.55 : 1);
         if (el > 4) {
           alert.state = 'ok';
@@ -225,7 +291,7 @@ export function buildRacks(scene, { isMobile, screens }) {
         if (el > 2.5) {
           const from = alert.ri * perRack;
           for (let i = from; i < from + perRack; i++) writeLed(i, on[i] ? 1 : 0.06);
-          glowMatAlert.color.set(COLORS.red);
+          glowMatAlert.color.set(COLORS.alert);
           panelMesh.visible = glowMesh.visible = false;
           alert = null;
         }
@@ -234,5 +300,5 @@ export function buildRacks(scene, { isMobile, screens }) {
     ledAttr.needsUpdate = true;
   }
 
-  return { update, triggerAlert };
+  return { update, triggerAlert, ping };
 }

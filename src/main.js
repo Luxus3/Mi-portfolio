@@ -5,6 +5,12 @@ import { initSound } from './ui/sound.js';
 import { initCursor } from './ui/cursor.js';
 import { initHud } from './ui/hud.js';
 import { runBoot } from './ui/boot.js';
+import { measure } from './ui/net.js';
+
+let worldRef = null;
+let hudRef = null;
+let rooted = false;
+const term = initTerminal({ getWorld: () => worldRef });
 
 const root = document.documentElement;
 const $ = (id) => document.getElementById(id);
@@ -67,10 +73,46 @@ async function start3D() {
   const world = await createWorld({ canvas, isMobile, onLoadProgress: setProgress });
   setProgress(1);
 
+  worldRef = world;
   const hud = initHud();
+  hudRef = hud;
   let alertSeen = false;
   world.onSection = (name) => { root.dataset.section = name; };
   world.onAlert = (text) => { alertSeen = true; hud.alertFx(text); };
+  world.onPing = (text) => hud.log(text);
+
+  // Click / tap on the 3D scene -> ping the racks.
+  let downX = 0;
+  let downY = 0;
+  let downT = 0;
+  let downOk = false;
+  let lastPing = 0;
+  const sceneTargets = [canvas, $('spacer'), root, document.body, $('main')];
+  window.addEventListener('pointerdown', (e) => {
+    downOk = e.isPrimary && (e.button === 0 || e.pointerType !== 'mouse') && sceneTargets.includes(e.target);
+    downX = e.clientX; downY = e.clientY; downT = performance.now();
+  }, { passive: true });
+  window.addEventListener('pointerup', (e) => {
+    if (!downOk) return;
+    downOk = false;
+    if (!root.classList.contains('ready')) return;
+    const now = performance.now();
+    if (Math.hypot(e.clientX - downX, e.clientY - downY) >= 8 || now - downT >= 300) return;
+    if (now - lastPing < 250) return;
+    lastPing = now;
+    const nx = (e.clientX / window.innerWidth) * 2 - 1;
+    const ny = -((e.clientY / window.innerHeight) * 2 - 1);
+    world.ping?.(nx, ny);
+  }, { passive: true });
+
+  // Real latency chip.
+  const pingLoop = async () => {
+    if (!document.hidden) {
+      const ms = await measure();
+      if (ms != null) hud.setPing(ms);
+    }
+    setTimeout(pingLoop, 12000);
+  };
 
   $('spacer').style.height = isMobile ? '600vh' : '700vh';
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -104,7 +146,7 @@ async function start3D() {
     else { world.start(); running = true; }
   });
 
-  // Hand-off: loader -> boot -> door -> scroll
+  // Hand-off: loader -> boot -> airlock -> scroll
   world.start();
   const loader = $('loader');
   const boot = runBoot();
@@ -131,9 +173,43 @@ async function start3D() {
     }, 12000 + Math.random() * 13000);
   };
   scheduleAlert();
+
+  pingLoop();
+  if (typeof world.ping === 'function') setTimeout(() => hud.log('TIP: click the racks', 6000), 3000);
 }
 
-initTerminal();
+function enableRoot() {
+  if (rooted) return;
+  rooted = true;
+  root.classList.add('root');
+  if (hudRef) {
+    hudRef.alertFx('ROOT ACCESS GRANTED');
+    hudRef.notice('ROOT ACCESS GRANTED', 5000);
+  }
+  term.setRoot();
+}
+
+// Konami code on keyboard.
+const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+let kPos = 0;
+window.addEventListener('keydown', (e) => {
+  if (e.repeat || !e.key) return;
+  const k = e.key.toLowerCase();
+  kPos = k === KONAMI[kPos] ? kPos + 1 : (k === KONAMI[0] ? 1 : 0);
+  if (kPos === KONAMI.length) { kPos = 0; enableRoot(); }
+});
+
+// Mobile: tap the logo 5 times.
+let taps = 0;
+let lastTap = 0;
+document.querySelector('.brand')?.addEventListener('click', () => {
+  const now = Date.now();
+  taps = now - lastTap < 1200 ? taps + 1 : 1;
+  lastTap = now;
+  if (taps >= 5) { taps = 0; enableRoot(); }
+});
+
+
 initSound();
 initCursor();
 initCopy();

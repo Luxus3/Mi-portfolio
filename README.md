@@ -1,6 +1,6 @@
-# Lucio — 3D datacenter portfolio
+# Lucio — 3D orbital datacenter portfolio
 
-Vite + three.js (0.170.0). First-person walk through a datacenter. All text lives in `src/content.js`.
+Vite + three.js (0.170.0). First-person flight through a space station that orbits the Earth. All text lives in `src/content.js`.
 
 ## Run
 
@@ -16,6 +16,13 @@ npm run build
 ```
 
 Vercel settings: framework Vite, build command `npm run build`, output directory `dist`.
+
+## Easter eggs
+
+- Terminal (button or `` ` `` key): `help`, `neofetch` (compares my machine with yours), `ping lucio.local` (real latency), `top`, `docker ps`, `ls -a` / `cat .secret`, `matrix`, `fortune`, `cowsay`, `sudo hire me`.
+- `orbit`: a joke status table of the station, plus a real ping. `sudo rm -rf /` (or `rm -rf /` in root mode) prints a fake kernel panic, text only.
+- Click or tap the scene to ping the racks.
+- Konami code (up up down down left right left right B A), or tap the LUCIO.local logo 5 times: ROOT MODE, then `cat /root/flag.txt`.
 
 ## Notes
 

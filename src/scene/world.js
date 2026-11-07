@@ -4,6 +4,7 @@ import { createComposer } from './effects.js';
 import { createScreens } from './screens.js';
 import { buildHall } from './hall.js';
 import { buildRacks } from './racks.js';
+import { buildSpace } from './space.js';
 
 const DOOR_TIME = 2;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -20,25 +21,29 @@ export async function createWorld({ canvas, isMobile = false, onLoadProgress = (
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(COLORS.bg);
-  scene.fog = new THREE.FogExp2(COLORS.fog, 0.045);
-  const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 120);
+  scene.fog = new THREE.FogExp2(COLORS.fog, 0.04);
+  const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 600);
   camera.position.set(0, L.camY, 0);
 
   const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
   await nextTick();
   progress(0.1);
 
+  const space = buildSpace(scene, { isMobile });
+  await nextTick();
+  progress(0.3);
+
   const hall = buildHall(scene, { isMobile });
   await nextTick();
-  progress(0.35);
+  progress(0.45);
 
   const screens = createScreens(aniso);
   await nextTick();
-  progress(0.55);
+  progress(0.6);
 
   const racks = buildRacks(scene, { isMobile, screens });
   await nextTick();
-  progress(0.75);
+  progress(0.78);
 
   const fx = isMobile ? null : createComposer(renderer, scene, camera);
 
@@ -82,7 +87,14 @@ export async function createWorld({ canvas, isMobile = false, onLoadProgress = (
       world.start();
       return door.promise;
     },
-    triggerAlert: () => racks.triggerAlert((txt) => world.onAlert?.(txt)),
+    onPing: null,
+    triggerAlert() {
+      racks.triggerAlert((txt) => world.onAlert?.(txt));
+    },
+    // nx, ny in [-1, 1] (ny up); the wave goes down the left or right rack row depending on nx
+    ping(nx) {
+      racks.ping(nx < 0 ? -1 : 1, camera.position.z, performance.now() / 1000, (txt) => world.onPing?.(txt));
+    },
     resize,
     start() {
       if (running) return;
@@ -97,6 +109,7 @@ export async function createWorld({ canvas, isMobile = false, onLoadProgress = (
     dispose() {
       world.pause();
       document.fonts?.removeEventListener?.('loadingdone', repaint);
+      space.dispose();
       scene.traverse((o) => {
         o.geometry?.dispose();
         for (const m of [].concat(o.material || [])) {
@@ -145,6 +158,10 @@ export async function createWorld({ canvas, isMobile = false, onLoadProgress = (
     camera.position.set(x, y, z);
     camera.lookAt(lookAt);
     camera.rotateZ(Math.sin(phase) * 0.004 * walkAmp);
+    // very subtle station drift / hull vibration
+    camera.rotateZ(Math.sin(t * 0.21) * 0.003);
+    camera.position.x += Math.sin(t * 0.37) * 0.012 + Math.sin(t * 31) * 0.0012;
+    camera.position.y += Math.sin(t * 0.29 + 1) * 0.01 + Math.sin(t * 27) * 0.0012;
 
     let idx = 0;
     ZONES.forEach(([, from], i) => {
@@ -171,7 +188,8 @@ export async function createWorld({ canvas, isMobile = false, onLoadProgress = (
       }
     }
     updateCamera(t, dt);
-    hall.update(t);
+    space.update(t, dt, camera, sp);
+    hall.update(t, space.sunLight);
     racks.update(t);
     screens.animate(t, camera.position.z);
     if (fx) fx.render();
