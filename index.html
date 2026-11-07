@@ -1,248 +1,159 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LUCIO // Computer Engineering student. Servers &amp; infrastructure.</title>
-  <meta name="description" content="Computer Engineering student. I build the machines behind the internet. Servers, hardware assembly, deployment. Open for freelance.">
-  <meta name="theme-color" content="#050505">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="LUCIO // I build the machines behind the internet">
-  <meta property="og:description" content="Computer Engineering student. Servers, racks, infrastructure and deployment. Open for freelance.">
-  <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23050505'/%3E%3Crect x='3' y='5' width='26' height='6' fill='%23ff2a1f'/%3E%3Crect x='3' y='13' width='26' height='6' fill='%23ff2a1f'/%3E%3Crect x='3' y='21' width='26' height='6' fill='%23ff2a1f'/%3E%3Crect x='23' y='7' width='3' height='2' fill='%2339ff14'/%3E%3C/svg%3E">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Lucio De Aro — I build the machines behind the internet</title>
+  <meta name="description" content="Lucio De Aro, Computer Engineering student in Córdoba, Argentina. Servers, hardware and infrastructure. I set up, harden and host your services." />
+  <link rel="canonical" href="https://lucio-portfolio.vercel.app/" />
+  <meta name="theme-color" content="#050505" />
+  <meta name="color-scheme" content="dark" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 
-  <!-- Fonts are the only external request. If blocked, the fallbacks in style.css kick in. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Lucio De Aro — I build the machines behind the internet" />
+  <meta property="og:description" content="Servers, hardware and infrastructure. Walk into my datacenter." />
+  <meta property="og:url" content="https://lucio-portfolio.vercel.app/" />
+  <meta property="og:image" content="https://lucio-portfolio.vercel.app/og.svg" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Lucio De Aro — I build the machines behind the internet" />
+  <meta name="twitter:description" content="Servers, hardware and infrastructure. Walk into my datacenter." />
+  <meta name="twitter:image" content="https://lucio-portfolio.vercel.app/og.svg" />
 
-  <!-- Runs before paint: marks JS as on, and shows the boot screen on every load. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
   <script>
     (function () {
       var d = document.documentElement;
-      d.className += ' js';
-      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) d.className += ' booting';
+      d.classList.add('js');
+      d.classList.add(window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'm2d' : 'm3d');
     })();
   </script>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to content</a>
 
-  <!-- 1. BOOT SEQUENCE -->
-  <div id="boot" class="boot" aria-hidden="true">
-    <div id="bootLog" class="boot-log"></div>
-    <p class="boot-skip">click or press any key to skip</p>
-  </div>
-
-  <!-- Decorative layers -->
-  <canvas id="noise" class="noise" aria-hidden="true"></canvas>
-  <div id="glow" class="glow" aria-hidden="true"></div>
-  <div id="xhair" class="xhair" aria-hidden="true"></div>
-  <div id="dot" class="dot" aria-hidden="true"></div>
-
-  <a class="skip" href="#rack">Skip to content</a>
-
-  <div id="app">
-    <header class="topbar">
-      <a class="brand" href="#top"><span data-name>LUCIO</span><span class="dim">@portfolio</span></a>
-      <nav aria-label="Main">
-        <a href="#rack">Rack</a>
-        <a href="#node-contact">Contact</a>
-      </nav>
-      <span class="dim topbar-up">up <span data-uptime>0d 00h 00m 00s</span></span>
-    </header>
-
-    <main>
-      <!-- 2. HERO -->
-      <section class="hero" id="top" aria-labelledby="heroTitle">
-        <div class="hero-copy">
-          <p class="kicker">// SYSTEM ONLINE. YOU ARE INSIDE.</p>
-          <h1 id="heroTitle" class="glitch hero-title" data-text="LUCIO" data-name data-scramble>LUCIO</h1>
-          <p class="sub">Computer Engineering student. I build the machines behind the internet.</p>
-          <ul class="status" aria-label="Status">
-            <li>STATUS: <b class="ok"><i class="led g" aria-hidden="true"></i>ONLINE</b></li>
-            <li>LOCATION: CÓRDOBA, AR</li>
-            <li class="warn"><i class="led a" aria-hidden="true"></i>OPEN FOR FREELANCE</li>
-          </ul>
-          <p class="uptime">UPTIME <b data-uptime>0d 00h 00m 00s</b></p>
-        </div>
-        <div class="hero-rack brackets" aria-hidden="true">
-          <canvas id="rackCanvas"></canvas>
-        </div>
-        <a class="scroll" href="#rack">scroll to enter the rack <span aria-hidden="true">↓</span></a>
-      </section>
-
-      <div class="hazard" aria-hidden="true"></div>
-
-      <!-- 3. THE RACK -->
-      <section class="rack-section" id="rack" aria-labelledby="rackTitle">
-        <p class="kicker">// RACK-01 // 5 NODES</p>
-        <h2 id="rackTitle" class="glitch big" data-text="THE RACK" data-scramble>THE RACK</h2>
-        <p class="hint">Pull a unit out to read it.</p>
-
-        <div class="rack">
-          <!-- NODE-01 -->
-          <article class="unit">
-            <h3 class="unit-h">
-              <button class="unit-face" id="b-whoami" aria-expanded="false" aria-controls="p-whoami">
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-                <span class="label">NODE-01 // WHOAMI</span>
-                <span class="vents" aria-hidden="true"></span>
-                <span class="leds" aria-hidden="true"><i class="led g"></i><i class="led a"></i><i class="led r"></i></span>
-                <span class="pull" aria-hidden="true">PULL ▸</span>
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-              </button>
-            </h3>
-            <div class="unit-panel" id="p-whoami" role="region" aria-labelledby="b-whoami">
-              <div class="panel-inner"><div class="panel brackets">
-                <p class="big-line">Lucio De Aro. 2nd-year Computer Engineering @ UCC.</p>
-                <p>I chase interesting projects: the weird, ambitious ones that make people say "wait, that's possible?"</p>
-                <p>English level B1, getting better every day.</p>
-                <p>I am obsessed with servers, hardware assembly and infrastructure.</p>
-              </div></div>
-            </div>
-          </article>
-
-          <!-- NODE-02 -->
-          <article class="unit">
-            <h3 class="unit-h">
-              <button class="unit-face" id="b-exp" aria-expanded="false" aria-controls="p-exp">
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-                <span class="label">NODE-02 // EXPERIENCE</span>
-                <span class="vents" aria-hidden="true"></span>
-                <span class="leds" aria-hidden="true"><i class="led g"></i><i class="led g"></i><i class="led r"></i></span>
-                <span class="pull" aria-hidden="true">PULL ▸</span>
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-              </button>
-            </h3>
-            <div class="unit-panel" id="p-exp" role="region" aria-labelledby="b-exp">
-              <div class="panel-inner"><div class="panel brackets">
-                <div class="job">
-                  <p class="tag">NOW</p>
-                  <p class="big-line">Bettermin</p>
-                  <p>A tech startup for mining that mixes AI and biotechnology. I work on real systems with a real team.</p>
-                </div>
-                <div class="job">
-                  <p class="tag">ALWAYS</p>
-                  <p class="big-line">Freelance</p>
-                  <p>I build and deploy projects for clients, from setup to going live.</p>
-                </div>
-              </div></div>
-            </div>
-          </article>
-
-          <!-- NODE-03 -->
-          <article class="unit">
-            <h3 class="unit-h">
-              <button class="unit-face" id="b-stack" aria-expanded="false" aria-controls="p-stack">
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-                <span class="label">NODE-03 // STACK</span>
-                <span class="vents" aria-hidden="true"></span>
-                <span class="leds" aria-hidden="true"><i class="led g"></i><i class="led a"></i><i class="led g"></i></span>
-                <span class="pull" aria-hidden="true">PULL ▸</span>
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-              </button>
-            </h3>
-            <div class="unit-panel" id="p-stack" role="region" aria-labelledby="b-stack">
-              <div class="panel-inner"><div class="panel brackets">
-                <ul class="chips">
-                  <li><i class="led g" aria-hidden="true"></i>Linux</li>
-                  <li><i class="led g" aria-hidden="true"></i>Docker</li>
-                  <li><i class="led g" aria-hidden="true"></i>Nginx</li>
-                  <li><i class="led g" aria-hidden="true"></i>Networking</li>
-                  <li><i class="led g" aria-hidden="true"></i>SQL</li>
-                  <li><i class="led g" aria-hidden="true"></i>Git</li>
-                  <li><i class="led g" aria-hidden="true"></i>Bash</li>
-                  <li><i class="led g" aria-hidden="true"></i>CI/CD</li>
-                  <li><i class="led g" aria-hidden="true"></i>Cloud</li>
-                  <li><i class="led g" aria-hidden="true"></i>Monitoring</li>
-                  <li><i class="led g" aria-hidden="true"></i>Hardware assembly</li>
-                </ul>
-                <div class="htop" id="htop" aria-hidden="true"></div>
-              </div></div>
-            </div>
-          </article>
-
-          <!-- NODE-04 -->
-          <article class="unit">
-            <h3 class="unit-h">
-              <button class="unit-face" id="b-do" aria-expanded="false" aria-controls="p-do">
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-                <span class="label">NODE-04 // WHAT I DO</span>
-                <span class="vents" aria-hidden="true"></span>
-                <span class="leds" aria-hidden="true"><i class="led g"></i><i class="led g"></i><i class="led a"></i></span>
-                <span class="pull" aria-hidden="true">PULL ▸</span>
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-              </button>
-            </h3>
-            <div class="unit-panel" id="p-do" role="region" aria-labelledby="b-do">
-              <div class="panel-inner"><div class="panel brackets">
-                <ol class="offers">
-                  <li><span class="num" aria-hidden="true">01</span>Server setup &amp; hardening</li>
-                  <li><span class="num" aria-hidden="true">02</span>Deploy &amp; host your services</li>
-                  <li><span class="num" aria-hidden="true">03</span>Infrastructure that doesn't break at 3AM</li>
-                </ol>
-              </div></div>
-            </div>
-          </article>
-
-          <!-- NODE-05 -->
-          <article class="unit" id="node-contact">
-            <h3 class="unit-h">
-              <button class="unit-face" id="b-contact" aria-expanded="false" aria-controls="p-contact">
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-                <span class="label">NODE-05 // CONTACT</span>
-                <span class="vents" aria-hidden="true"></span>
-                <span class="leds" aria-hidden="true"><i class="led g"></i><i class="led r"></i><i class="led g"></i></span>
-                <span class="pull" aria-hidden="true">PULL ▸</span>
-                <span class="ear" aria-hidden="true"><i class="screw"></i><i class="screw"></i></span>
-              </button>
-            </h3>
-            <div class="unit-panel" id="p-contact" role="region" aria-labelledby="b-contact">
-              <div class="panel-inner"><div class="panel brackets">
-                <p>Have a server to build? Say hi.</p>
-                <a class="mail" id="mailLink" href="mailto:dearolucio@gmail.com">dearolucio@gmail.com</a>
-                <div class="btns">
-                  <button type="button" class="btn" id="copyMail">Copy email</button>
-                  <a class="btn" data-link="github" href="https://github.com/Luxus3" target="_blank" rel="noopener">GitHub</a>
-                </div>
-              </div></div>
-            </div>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <div class="hazard" aria-hidden="true"></div>
-
-    <!-- 6. FOOTER -->
-    <footer class="footer">
-      <p>© <span id="year">2026</span> <span data-name>LUCIO</span> — built by hand, no frameworks.</p>
-      <p>uptime: <b data-uptime>0d 00h 00m 00s</b></p>
-      <button type="button" class="btn" id="reboot">Reboot</button>
-    </footer>
-
-    <noscript><p class="noscript">JavaScript is off. The server still runs, you just miss the show.</p></noscript>
-  </div>
-
-  <!-- 4. TERMINAL -->
-  <div class="term" id="term">
-    <button type="button" class="term-toggle" id="termToggle" aria-expanded="false" aria-controls="termBox">[&gt;_ ssh <span data-lname>lucio</span>@portfolio]</button>
-    <div class="term-box" id="termBox" role="dialog" aria-label="Interactive terminal" hidden>
-      <div class="term-out" id="termOut" aria-live="polite"></div>
-      <label class="term-line">
-        <span class="prompt" id="prompt">guest@lucio:~$</span>
-        <input id="termIn" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Terminal input">
-      </label>
+  <header id="top" class="bar">
+    <a class="brand" href="#hero" aria-label="Lucio, back to top">LUCIO<span>.local</span></a>
+    <div class="tools">
+      <button type="button" id="btn-term" class="btn" aria-haspopup="dialog" aria-controls="term">&gt;_ TERMINAL</button>
+      <button type="button" id="btn-sound" class="btn" aria-pressed="false">SOUND: OFF</button>
     </div>
+  </header>
+
+  <main id="main">
+    <section id="hero" class="panel" aria-labelledby="hero-title">
+      <div class="hero-inner">
+        <h1 id="hero-title" class="glitch" data-text="LUCIO">LUCIO</h1>
+        <p class="hero-sub">I build the machines behind the internet.</p>
+      </div>
+    </section>
+
+    <section id="whoami" class="panel" aria-labelledby="whoami-h">
+      <h2 id="whoami-h"><span class="idx">01</span> WHOAMI</h2>
+      <p>Lucio De Aro.</p>
+      <p>2nd-year Computer Engineering student at UCC.</p>
+      <p>Córdoba, Argentina.</p>
+      <p>I love servers, hardware and infrastructure.</p>
+      <p>I like big, strange projects.</p>
+      <p>The ones that make you say: wait, that's possible?</p>
+    </section>
+
+    <section id="experience" class="panel" aria-labelledby="experience-h">
+      <h2 id="experience-h"><span class="idx">02</span> EXPERIENCE</h2>
+      <ul class="cards">
+        <li>
+          <h3>Bettermin <em class="status">NOW</em></h3>
+          <p>A startup that mixes AI and biotech for mining. I work here today.</p>
+        </li>
+        <li>
+          <h3>Freelance <em class="status">ACTIVE</em></h3>
+          <p>I set up and ship services for clients.</p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="stack" class="panel" aria-labelledby="stack-h">
+      <h2 id="stack-h"><span class="idx">03</span> STACK</h2>
+      <ul class="chips">
+        <li>Linux</li><li>Docker</li><li>Nginx</li><li>Networking</li><li>SQL</li><li>Git</li>
+        <li>Bash</li><li>CI/CD</li><li>Cloud</li><li>Monitoring</li><li>Hardware assembly</li>
+      </ul>
+    </section>
+
+    <section id="services" class="panel" aria-labelledby="services-h">
+      <h2 id="services-h"><span class="idx">04</span> WHAT I DO</h2>
+      <ul class="cards">
+        <li><h3>Server setup &amp; hardening</h3><p>Clean installs. Locked doors.</p></li>
+        <li><h3>Deploy &amp; host your services</h3><p>Your app, live and stable.</p></li>
+        <li><h3>Infrastructure that doesn't break at 3AM</h3><p>Monitoring. Backups. Sleep.</p></li>
+      </ul>
+    </section>
+
+    <section id="contact" class="panel" aria-labelledby="contact-h">
+      <div class="term-box">
+        <div class="term-title"><span>guest@lucio.local: ~/contact</span><span class="dots" aria-hidden="true">■ ■ ■</span></div>
+        <div class="term-body">
+          <h2 id="contact-h"><span class="idx">05</span> CONTACT</h2>
+          <p class="big">Have a wild idea?<br />Let's build it.</p>
+          <p class="mail-row">
+            <a id="mail" class="mail" href="mailto:dearolucio@gmail.com">dearolucio@gmail.com</a>
+            <button type="button" id="btn-copy" class="btn btn-red" aria-live="polite">COPY</button>
+          </p>
+          <p><a class="gh" href="https://github.com/Luxus3" target="_blank" rel="noopener noreferrer">GitHub / Luxus3 &rarr;</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="foot" class="foot">
+    <p>&copy; 2026 Lucio De Aro. Built in Córdoba, Argentina.</p>
+  </footer>
+
+  <noscript><p class="noscript">JavaScript is off. You are seeing the plain version of the site.</p></noscript>
+
+  <!-- 3D layers -->
+  <canvas id="gl" aria-hidden="true"></canvas>
+  <div id="spacer" aria-hidden="true"></div>
+
+  <div id="hud" class="hud" aria-hidden="true">
+    <span id="hud-text">DOOR 00 — ENTRANCE</span>
+    <span class="hud-bar"><i id="hud-fill"></i></span>
+  </div>
+  <div id="scroll-hint" class="scroll-hint" aria-hidden="true"><span>SCROLL</span><i></i></div>
+  <div id="ticker" class="ticker" aria-hidden="true"><span class="tk-tag">LOG</span><span id="tk-text"></span></div>
+
+  <!-- Terminal -->
+  <div id="term" class="term" role="dialog" aria-label="Interactive terminal" aria-modal="false" hidden>
+    <div class="term-title"><span>guest@lucio.local</span><button type="button" id="term-close" class="x" aria-label="Close terminal">[X]</button></div>
+    <div id="term-out" class="term-out" role="log" aria-live="polite"></div>
+    <form id="term-form" class="term-form" autocomplete="off">
+      <label for="term-in">$</label>
+      <input id="term-in" type="text" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Command" />
+    </form>
   </div>
 
-  <!-- 5. LOG TICKER -->
-  <div class="ticker" aria-hidden="true"><div class="ticker-track" id="tickerTrack"></div></div>
+  <!-- Loader + boot -->
+  <div id="loader" class="loader" role="status" aria-live="polite">
+    <p class="loader-t">LOADING DATACENTER</p>
+    <div class="loader-bar"><i id="loader-fill"></i></div>
+    <p id="loader-pct" class="loader-pct">0%</p>
+  </div>
+  <div id="boot" class="boot" hidden>
+    <pre id="boot-out" class="boot-out"></pre>
+    <p class="boot-skip">Press ENTER or click to skip</p>
+  </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <!-- Overlays -->
+  <div class="fx fx-vig" aria-hidden="true"></div>
+  <div class="fx fx-scan" aria-hidden="true"></div>
+  <div class="fx fx-noise" aria-hidden="true"></div>
+  <div id="flash" class="fx fx-flash" aria-hidden="true"></div>
+  <div id="cur-dot" class="cur-dot" aria-hidden="true"></div>
+  <div id="cur-ring" class="cur-ring" aria-hidden="true"></div>
 
-  <script src="main.js"></script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
