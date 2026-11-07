@@ -116,22 +116,22 @@ function drawStack(ctx, t) {
   const gap = 20;
   c.items.forEach((name, i) => {
     const x = PAD + (i % 3) * (colW + gap);
-    const y = 116 + Math.floor(i / 3) * 66;
+    const y = 116 + Math.floor(i / 3) * 58;
     ctx.fillStyle = '#101010';
-    ctx.fillRect(x, y, colW, 52);
+    ctx.fillRect(x, y, colW, 46);
     ctx.strokeStyle = '#2a2a2a';
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, colW, 52);
+    ctx.strokeRect(x, y, colW, 46);
     const on = 0.55 + 0.45 * Math.sin(t * 2.2 + i * 1.7);
     ctx.globalAlpha = on;
     ctx.fillStyle = i % 5 === 3 ? CSS.amber : CSS.green;
     ctx.beginPath();
-    ctx.arc(x + 24, y + 26, 7, 0, Math.PI * 2);
+    ctx.arc(x + 24, y + 23, 7, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalAlpha = 1;
     fit(ctx, name, colW - 56, 25, '600');
     ctx.fillStyle = CSS.text;
-    ctx.fillText(name, x + 44, y + 35);
+    ctx.fillText(name, x + 44, y + 32);
   });
   // decorative htop-style bars
   const labels = ['CPU1', 'CPU2', 'CPU3', 'CPU4', 'MEM ', 'SWP '];
