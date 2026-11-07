@@ -80,35 +80,6 @@ async function start3D() {
   world.onSection = (name) => { root.dataset.section = name; };
   world.onAlert = (text) => { alertSeen = true; hud.alertFx(text); };
   world.onPing = (text) => hud.log(text);
-  world.onChaos = (fase, text) => {
-    root.classList.toggle('blackout', fase === 'blackout');
-    if (text) {
-      hud.alertFx(text);
-      term.echo(text, 'err');
-    }
-  };
-
-  // Chaos: one run at a time. Wrap so the button, terminal and Konami share the lock.
-  const chaosBtn = $('btn-chaos');
-  const rawChaos = typeof world.chaos === 'function' ? world.chaos.bind(world) : null;
-  if (rawChaos) {
-    let running = null;
-    world.chaos = (kind) => {
-      if (running) return running;
-      chaosBtn.disabled = true;
-      running = Promise.resolve()
-        .then(() => rawChaos(kind))
-        .catch((err) => console.warn('chaos failed', err))
-        .finally(() => {
-          running = null;
-          chaosBtn.disabled = false;
-          root.classList.remove('blackout');
-        });
-      return running;
-    };
-    chaosBtn.hidden = false;
-    chaosBtn.addEventListener('click', () => world.chaos('blackout'));
-  }
 
   // Click / tap on the 3D scene -> ping the racks.
   let downX = 0;
@@ -175,7 +146,7 @@ async function start3D() {
     else { world.start(); running = true; }
   });
 
-  // Hand-off: loader -> boot -> door -> scroll
+  // Hand-off: loader -> boot -> airlock -> scroll
   world.start();
   const loader = $('loader');
   const boot = runBoot();
@@ -216,7 +187,6 @@ function enableRoot() {
     hudRef.notice('ROOT ACCESS GRANTED', 5000);
   }
   term.setRoot();
-  worldRef?.chaos?.('panic');
 }
 
 // Konami code on keyboard.

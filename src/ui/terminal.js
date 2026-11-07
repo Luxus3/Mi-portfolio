@@ -163,16 +163,6 @@ export function initTerminal({ getWorld } = {}) {
     ...DIRS[abs].files.filter((f) => all || !f.startsWith('.'))
   ];
 
-  /* ---------- World helpers ---------- */
-  async function chaos(kind, noWorldMsg) {
-    const world = getWorld?.();
-    if (typeof world?.chaos !== 'function') {
-      print(noWorldMsg || 'No 3D datacenter here, just text.', 'err');
-      return;
-    }
-    try { await world.chaos(kind); } catch { /* scene failed, ignore */ }
-  }
-
   function runLive(setup, ms) {
     return new Promise((resolve) => {
       let done = false;
@@ -210,7 +200,7 @@ export function initTerminal({ getWorld } = {}) {
       printAll(right);
     }
     print('');
-    print('You are now rack-42 in my datacenter.');
+    print('You are now rack-42 on my space station.');
   }
 
   async function ping(args) {
@@ -330,13 +320,22 @@ export function initTerminal({ getWorld } = {}) {
       await sleep(110 + Math.random() * 120);
     }
     print('Kernel panic - not syncing: Attempted to kill init!', 'err');
-    await chaos('panic', 'No 3D datacenter here, just text. Nothing was harmed.');
+    await sleep(600);
     print('Just kidding. Everything is fine. Rebooting...');
   }
 
-  async function shutdown() {
-    print('Cutting power to the datacenter...', 'err');
-    await chaos('blackout', 'No 3D datacenter here, just text. The lights stay on.');
+  async function orbit() {
+    printAll([
+      'ORBITAL STATUS',
+      '--------------',
+      'Altitude:  408 km',
+      'Speed:     7.66 km/s',
+      'Moon:      visible',
+      'Sun:       yes',
+      'Latency to Earth: 3ms (real ping below)',
+      ''
+    ]);
+    await ping(['lucio.local']);
   }
 
   const sudoersMsg = () => print('guest is not in the sudoers file. This incident will be reported.', 'err');
@@ -411,8 +410,7 @@ export function initTerminal({ getWorld } = {}) {
     top,
     htop: top,
     docker,
-    chaos: shutdown,
-    shutdown: () => (isRoot ? shutdown() : print('shutdown: Permission denied. Try sudo.', 'err')),
+    orbit,
     rm: (args) => (isRoot ? rm(args) : print('rm: cannot remove: Permission denied. Try sudo. (Or don\'t.)', 'err')),
     matrix,
     fortune: () => {
@@ -426,7 +424,6 @@ export function initTerminal({ getWorld } = {}) {
       if (!a.length) {
         if (isRoot) print('You are already root.'); else sudoersMsg();
       } else if (sub === 'hire me') printAll(CONTENT.terminal.hire);
-      else if (a[0] === 'shutdown') return shutdown();
       else if (a[0] === 'rm') return rm(args.slice(1));
       else if (isRoot) return dispatch(args.join(' '));
       else sudoersMsg();

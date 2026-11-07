@@ -1,5 +1,22 @@
-export const COLORS = { bg: 0x050505, fog: 0x080303, red: 0xff2a1f, green: 0x39ff14, amber: 0xffb000 };
-export const CSS = { bg: '#050505', red: '#ff2a1f', green: '#39ff14', amber: '#ffb000', dim: '#6b6b6b', text: '#c9ffc0' };
+export const COLORS = {
+  bg: 0x03060d,
+  fog: 0x040a18,
+  accent: 0x2f8cff,
+  cyan: 0x5ee0ff,
+  alert: 0xff4d3a,
+  green: 0x39ff14,
+  amber: 0xffb000
+};
+export const CSS = {
+  bg: '#03060d',
+  accent: '#2f8cff',
+  cyan: '#5ee0ff',
+  alert: '#ff4d3a',
+  green: '#39ff14',
+  amber: '#ffb000',
+  dim: '#6b7a90',
+  text: '#c9ffc0'
+};
 export const FONT = "'JetBrains Mono', monospace";
 
 const CAM_TRAVEL = 68;

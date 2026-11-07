@@ -1,7 +1,7 @@
 import { CONTENT } from '../content.js';
 
 const SECTIONS = [
-  { name: 'hero', end: 0.14, label: 'DOOR 00 — ENTRANCE' },
+  { name: 'hero', end: 0.14, label: 'AIRLOCK 00 — ENTRANCE' },
   { name: 'whoami', end: 0.34, label: 'RACK 01/05 — WHOAMI' },
   { name: 'experience', end: 0.52, label: 'RACK 02/05 — EXPERIENCE' },
   { name: 'stack', end: 0.70, label: 'RACK 03/05 — STACK' },
@@ -75,6 +75,17 @@ export function initHud() {
       hud.classList.remove('alert');
       tk.classList.remove('alert');
     }, 3000);
+  }
+
+  // Decorative orbit counter: one "orbit" every 90 s (a real ISS lap is ~92 min; it's a joke).
+  const orbitEl = document.getElementById('hud-orbit');
+  if (orbitEl) {
+    const t0 = Date.now();
+    setInterval(() => {
+      if (document.hidden) return;
+      const n = 1 + Math.floor((Date.now() - t0) / 90000);
+      orbitEl.textContent = `ALT 408 KM · 7.66 KM/S · ORBIT #${n}`;
+    }, 5000);
   }
 
   // Rotating fake logs.

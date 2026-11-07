@@ -4,11 +4,12 @@ export const CONTENT = {
   github: 'https://github.com/Luxus3',
   boot: [
     '$ ssh guest@lucio.local',
-    'Connecting to lucio.local:22 ...',
-    '[ OK ] Handshake complete',
+    'Connecting to lucio.local (low Earth orbit) ...',
+    '[ OK ] Orbital link established',
+    '[ OK ] Solar panels online',
     '[ OK ] Cooling systems online',
     '[ OK ] Loading portfolio modules',
-    'Access granted. Opening door.'
+    'Access granted. Opening airlock.'
   ],
   hero: { title: 'LUCIO', subtitle: 'I build the machines behind the internet.' },
   whoami: {
@@ -56,7 +57,7 @@ export const CONTENT = {
   ],
   terminal: {
     welcome: 'lucio.local terminal. Type "help".',
-    hint: 'Try: neofetch, ping lucio.local, top, rm -rf /',
+    hint: 'Try: neofetch, orbit, ping lucio.local, top, rm -rf /',
     help: [
       'help         list commands',
       'whoami       who I am',
@@ -67,7 +68,7 @@ export const CONTENT = {
       'ping lucio.local  real latency',
       'top          live system view',
       'docker ps    my containers',
-      'chaos        cut the power',
+      'orbit        my station (joke) + real ping',
       'matrix       follow the rabbit',
       'fortune      engineer wisdom',
       'cowsay hi    a cow talks',
@@ -90,9 +91,12 @@ export const CONTENT = {
       'chmod 777 is not a fix. It is a cry for help.',
       'The best log is the one you read before the incident.',
       'It is always DNS.',
-      'Real engineers test in production. Brave ones have backups.'
+      'Real engineers test in production. Brave ones have backups.',
+      'In space, nobody can hear you reboot.',
+      'The cloud is nice. My servers have a better view.',
+      'Zero gravity does not fix bad code.'
     ],
     hire: ['[sudo] password for guest: ********', 'Permission granted.', 'Great choice. Write to dearolucio@gmail.com'],
-    neofetch: ['guest@lucio.local', '-----------------', 'OS: Lucio OS (Argentina)', 'Host: UCC Computer Eng., year 2', 'Kernel: curiosity 5.0', 'Uptime: always on', 'Shell: bash', 'Stack: Linux, Docker, Nginx...', 'Status: open to work']
+    neofetch: ['guest@lucio.local', '-----------------', 'OS: Lucio OS (Argentina)', 'Host: Orbital DC (it is a joke)', 'Uni: UCC Computer Eng., year 2', 'Kernel: curiosity 5.0', 'Uptime: always on', 'Shell: bash', 'Stack: Linux, Docker, Nginx...', 'Status: open to work']
   }
 };
