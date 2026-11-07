@@ -76,6 +76,8 @@ function doorTex(flip) {
 }
 
 export function buildHall(scene, { isMobile }) {
+  const K = isMobile ? 0.1 : 1; // no bloom on mobile: tone red glow down
+  const S = isMobile ? 0.55 : 1;
   const hw = L.halfW;
   const H = L.height;
   const len = L.zFront - L.zEnd;
@@ -174,11 +176,11 @@ export function buildHall(scene, { isMobile }) {
   const panelGeo = new THREE.BoxGeometry(3, H, 0.3);
   const left = add(panelGeo, new THREE.MeshBasicMaterial({ map: doorTex(false) }), -1.5, H / 2, L.doorZ);
   const right = add(panelGeo, new THREE.MeshBasicMaterial({ map: doorTex(true) }), 1.5, H / 2, L.doorZ);
-  const seam = add(new THREE.BoxGeometry(0.05, H - 0.4, 0.05), glowMat(COLORS.red, 3.5), 0, H / 2, L.doorZ + 0.17);
+  const seam = add(new THREE.BoxGeometry(0.05, H - 0.4, 0.05), glowMat(COLORS.red, 3.5 * K), 0, H / 2, L.doorZ + 0.17);
 
   // emergency lamps in the entry room
-  const lampMat = glowMat(COLORS.red, 3.5);
-  const spill = spillMat(COLORS.red, 0.4);
+  const lampMat = glowMat(COLORS.red, 3.5 * K);
+  const spill = spillMat(COLORS.red, 0.4 * S);
   for (const s of [-1, 1]) {
     add(new THREE.BoxGeometry(0.6, 0.15, 0.3), lampMat, s * 2.2, 3.05, -1.5);
     add(new THREE.PlaneGeometry(3.4, 3.4), spill, s * 2.2, 2.7, -1.5, 3);
@@ -192,11 +194,11 @@ export function buildHall(scene, { isMobile }) {
     },
     update(t) {
       const pulse = 0.5 + 0.5 * Math.sin(t * 3.2);
-      lampMat.color.set(COLORS.red).multiplyScalar(1.5 + 3 * pulse);
-      spill.opacity = 0.15 + 0.4 * pulse;
+      lampMat.color.set(COLORS.red).multiplyScalar((1.5 + 3 * pulse) * K);
+      spill.opacity = (0.15 + 0.4 * pulse) * S;
       for (let i = 0; i < tubeN; i++) {
         const w = 0.5 + 0.5 * Math.sin(t * 2.2 - i * 0.6);
-        tubes.setColorAt(i, tmp.copy(red).multiplyScalar(2.5 + 2.5 * w));
+        tubes.setColorAt(i, tmp.copy(red).multiplyScalar((2.5 + 2.5 * w) * K));
         refl.setColorAt(i, tmp.copy(red).multiplyScalar(0.15 + 0.35 * w));
       }
       tubes.instanceColor.needsUpdate = true;

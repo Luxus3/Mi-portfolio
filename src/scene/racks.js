@@ -125,7 +125,7 @@ export function buildRacks(scene, { isMobile, screens }) {
   ledAttr.needsUpdate = true;
 
   // --- section racks with big screens ---
-  const redBar = glowMat(COLORS.red, 3.5);
+  const redBar = glowMat(COLORS.red, isMobile ? 1.05 : 3.5);
   const barGeo = new THREE.BoxGeometry(0.06, 0.06, 3.3);
   const bodyMat = new THREE.MeshBasicMaterial({ color: 0x090909 });
   const bodyGeo = new THREE.BoxGeometry(1.2, 2.9, 3.4);
@@ -211,7 +211,7 @@ export function buildRacks(scene, { isMobile, screens }) {
       if (alert.state === 'alert') {
         const p = 0.5 + 0.5 * Math.sin(t * 10);
         setAlertLeds(red, 0.3 + p);
-        glowMatAlert.opacity = 0.2 + 0.4 * p;
+        glowMatAlert.opacity = (0.2 + 0.4 * p) * (isMobile ? 0.55 : 1);
         if (el > 4) {
           alert.state = 'ok';
           alert.t0 = t;
