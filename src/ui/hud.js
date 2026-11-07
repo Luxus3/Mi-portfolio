@@ -19,15 +19,21 @@ export function initHud() {
   const fill = document.getElementById('hud-fill');
   const flash = document.getElementById('flash');
   const tk = document.getElementById('tk-text');
+  const pingEl = document.getElementById('hud-ping');
   let current = '';
+  let label = '';
   let alertTimer = 0;
+  let noticeTimer = 0;
+  let noticing = false;
+  let holdUntil = 0;
 
   function update(p) {
     const s = sectionAt(p);
     fill.style.width = (p * 100).toFixed(1) + '%';
     if (s.name !== current) {
       current = s.name;
-      text.textContent = s.label;
+      label = s.label;
+      if (!noticing) text.textContent = label;
     }
     return s.name;
   }
@@ -36,6 +42,25 @@ export function initHud() {
     const t = new Date().toTimeString().slice(0, 8);
     tk.textContent = `${t}  ${msg}`;
     tk.classList.toggle('alert', !!isAlert);
+  }
+
+  // Plain log line in the ticker, kept visible for a while.
+  function log(msg, hold = 4000) {
+    if (!msg || tk.classList.contains('alert')) return;
+    holdUntil = Date.now() + hold;
+    setLog(msg);
+  }
+
+  // Temporary text in the HUD label (e.g. ROOT ACCESS GRANTED).
+  function notice(msg, ms = 4000) {
+    noticing = true;
+    text.textContent = msg;
+    clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(() => { noticing = false; text.textContent = label; }, ms);
+  }
+
+  function setPing(ms) {
+    if (pingEl) pingEl.textContent = `PING ${Math.round(ms)}ms`;
   }
 
   function alertFx(msg) {
@@ -56,10 +81,10 @@ export function initHud() {
   let i = Math.floor(Math.random() * CONTENT.logs.length);
   setLog(CONTENT.logs[i]);
   setInterval(() => {
-    if (document.hidden || tk.classList.contains('alert')) return;
+    if (document.hidden || tk.classList.contains('alert') || Date.now() < holdUntil) return;
     i = (i + 1) % CONTENT.logs.length;
     setLog(CONTENT.logs[i]);
   }, 2600);
 
-  return { update, alertFx };
+  return { update, alertFx, log, notice, setPing };
 }

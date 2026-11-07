@@ -199,12 +199,103 @@ export function buildRacks(scene, { isMobile, screens }) {
     emit(`ALERT ${name}: ${reason}`);
   }
 
+  // --- chaos state (mutated by chaos.js) + ping waves ---
+  // power: LED multiplier; bars: red bar multiplier; wave/front: reboot sweep (racks with z >= front are lit);
+  // panic: every LED solid red; boost: extra additive brightness.
+  const chaos = { power: 1, bars: 1, panic: false, wave: false, front: 0, boost: 0 };
+  const barBase = isMobile ? 1.05 : 3.5;
+  let lastBars = 1;
+  let wasFull = false;
+  const PING_SPEED = 40;
+  const PING_LIFE = 1.5;
+  const PING_WIDTH = 3;
+  const PING_GAIN = isMobile ? 2 : 3.5;
+  const cyan = new THREE.Color(0x7df9ff);
+  const waves = [0, 1, 2].map(() => ({ active: false, t0: 0, side: 1, z0: 0 }));
+  const pr = red.r * GAIN;
+  const pg = red.g * GAIN;
+  const pb = red.b * GAIN;
+
+  function ping(side, camZ, t, emit) {
+    if (!nRacks) return;
+    let w = waves.find((v) => !v.active);
+    if (!w) w = waves.reduce((a, b) => (a.t0 <= b.t0 ? a : b));
+    w.active = true;
+    w.t0 = t;
+    w.side = side;
+    w.z0 = camZ;
+    // rack on that side nearest to where the front will be mid-flight
+    const zt = camZ - PING_SPEED * PING_LIFE * 0.5;
+    let best = 0;
+    let bd = Infinity;
+    for (let ri = 0; ri < nRacks; ri++) {
+      if (racks[ri].s !== side) continue;
+      const d = Math.abs(racks[ri].z - zt);
+      if (d < bd) {
+        bd = d;
+        best = ri;
+      }
+    }
+    const ms = (0.2 + Math.random() * 0.7).toFixed(1);
+    emit(`ping rack-${String(best + 1).padStart(2, '0')}: ${ms}ms`);
+  }
+
+  function fullPass(t) {
+    const a = ledAttr.array;
+    for (let ri = 0; ri < nRacks; ri++) {
+      const r = racks[ri];
+      let f = chaos.power;
+      if (chaos.wave) {
+        const d = r.z - chaos.front;
+        f = d < 0 ? 0 : d < 1.5 ? 1 + 2 * (1 - d / 1.5) : 1;
+      }
+      f += chaos.boost;
+      let k = 0;
+      for (let w = 0; w < 3; w++) {
+        const v = waves[w];
+        if (!v.active || v.side !== r.s) continue;
+        const x = (v.z0 - r.z - (t - v.t0) * PING_SPEED) / PING_WIDTH;
+        if (x > -3 && x < 3) k = Math.max(k, Math.exp(-x * x));
+      }
+      const from = ri * perRack;
+      for (let i = from; i < from + perRack; i++) {
+        const j = i * 3;
+        if (chaos.panic) {
+          a[j] = pr;
+          a[j + 1] = pg;
+          a[j + 2] = pb;
+        } else {
+          const v = (on[i] ? 1 : 0.06) * f * (1 - k);
+          a[j] = base[j] * v + cyan.r * k * PING_GAIN;
+          a[j + 1] = base[j + 1] * v + cyan.g * k * PING_GAIN;
+          a[j + 2] = base[j + 2] * v + cyan.b * k * PING_GAIN;
+        }
+      }
+    }
+  }
+
   function update(t) {
+    let nWaves = 0;
+    for (const w of waves) {
+      if (w.active && t - w.t0 > PING_LIFE) w.active = false;
+      if (w.active) nWaves++;
+    }
+    const full =
+      nWaves > 0 || wasFull || chaos.panic || chaos.wave || chaos.power !== 1 || chaos.boost !== 0;
     const flips = isMobile ? 12 : 40;
     for (let k = 0; k < flips && nLeds; k++) {
       const i = (Math.random() * nLeds) | 0;
       on[i] ^= 1;
-      writeLed(i, on[i] ? 1 : 0.06);
+      if (!full) writeLed(i, on[i] ? 1 : 0.06);
+    }
+    if (full) {
+      fullPass(t);
+      // one extra pass after going idle restores the normal look
+      wasFull = nWaves > 0 || chaos.panic || chaos.wave || chaos.power !== 1 || chaos.boost !== 0;
+    }
+    if (chaos.bars !== lastBars) {
+      lastBars = chaos.bars;
+      redBar.color.set(COLORS.red).multiplyScalar(barBase * chaos.bars);
     }
     if (alert) {
       const el = t - alert.t0;
@@ -234,5 +325,5 @@ export function buildRacks(scene, { isMobile, screens }) {
     ledAttr.needsUpdate = true;
   }
 
-  return { update, triggerAlert };
+  return { update, triggerAlert, ping, chaos };
 }

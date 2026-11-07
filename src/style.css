@@ -48,6 +48,16 @@ a { color: var(--green); }
 .btn-red { border-color: var(--red); color: var(--red); }
 .btn-red:hover { background: var(--red); color: #000; border-color: var(--red); }
 .btn.done { background: var(--green); color: #000; border-color: var(--green); }
+.btn-chaos { border-color: var(--amber); color: var(--amber); background: repeating-linear-gradient(-45deg, #050505 0 8px, #2a1500 8px 16px); }
+.btn-chaos:hover:not(:disabled) { background: var(--red); color: #000; border-color: var(--red); }
+.btn-chaos:disabled { border-color: var(--red); color: var(--red); cursor: not-allowed; opacity: 0.7; animation: chaos-pulse 0.6s steps(1) infinite; }
+@keyframes chaos-pulse { 50% { background: #ff2a1f33; } }
+.m2d #btn-chaos { display: none !important; }
+
+/* Blackout: heavy vignette, red ticker */
+.blackout .fx-vig { background: radial-gradient(ellipse at center, #000000a6 0%, #000000f0 90%); }
+.blackout .ticker { color: var(--red); background: #1a0000f2; }
+.blackout .tk-tag { background: var(--red); }
 
 /* ---------- Content (2D base) ---------- */
 main { position: relative; z-index: 5; }
@@ -141,6 +151,8 @@ main { position: relative; z-index: 5; }
 }
 .hud-bar { display: block; height: 4px; width: 100%; min-width: 180px; background: #1a1a1a; }
 .hud-bar i { display: block; height: 100%; width: 0; background: currentColor; }
+.hud-ping { font-size: 0.68rem; color: var(--amber); letter-spacing: 0.08em; }
+.root .hud { color: var(--red); border-color: var(--red); }
 .hud.alert { color: var(--red); border-color: var(--red); animation: hud-blink 0.25s 4 steps(1); }
 @keyframes hud-blink { 50% { background: #ff2a1f55; } }
 
@@ -177,6 +189,11 @@ main { position: relative; z-index: 5; }
 .term-form { display: flex; gap: 8px; padding: 8px 12px 12px; border-top: 1px solid #39ff1455; color: var(--amber); }
 .term-form input { flex: 1; background: none; border: 0; color: var(--fg); font: inherit; outline: none; caret-color: var(--green); min-width: 0; }
 .term-form:focus-within { background: #39ff1410; }
+.term-form label { white-space: nowrap; }
+.term.rootmode { border-color: var(--red); box-shadow: 8px 8px 0 #000, 0 0 40px #ff2a1f44; }
+.term.rootmode .term-title { background: var(--red); }
+.term.rootmode .term-form label { color: var(--red); }
+.term-out .live { color: var(--green); }
 
 /* ---------- Loader / boot ---------- */
 .js .loader {

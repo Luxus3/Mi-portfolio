@@ -186,7 +186,12 @@ export function buildHall(scene, { isMobile }) {
     add(new THREE.PlaneGeometry(3.4, 3.4), spill, s * 2.2, 2.7, -1.5, 3);
   }
 
+  // chaos state (mutated by chaos.js): power scales the tubes, emerg adds a hard red emergency pulse
+  const chaos = { power: 1, emerg: 0 };
+  const KE = isMobile ? 0.4 : 1;
+
   return {
+    chaos,
     setDoor(k) {
       left.position.x = -1.5 - 3.05 * k;
       right.position.x = 1.5 + 3.05 * k;
@@ -196,10 +201,14 @@ export function buildHall(scene, { isMobile }) {
       const pulse = 0.5 + 0.5 * Math.sin(t * 3.2);
       lampMat.color.set(COLORS.red).multiplyScalar((1.5 + 3 * pulse) * K);
       spill.opacity = (0.15 + 0.4 * pulse) * S;
+      const pw = chaos.power;
+      const e = chaos.emerg;
+      const ep = 0.5 + 0.5 * Math.sin(t * 6);
+      const eh = e * ep * ep;
       for (let i = 0; i < tubeN; i++) {
         const w = 0.5 + 0.5 * Math.sin(t * 2.2 - i * 0.6);
-        tubes.setColorAt(i, tmp.copy(red).multiplyScalar((2.5 + 2.5 * w) * K));
-        refl.setColorAt(i, tmp.copy(red).multiplyScalar(0.15 + 0.35 * w));
+        tubes.setColorAt(i, tmp.copy(red).multiplyScalar((2.5 + 2.5 * w) * K * pw + (0.2 * e + 4 * eh) * KE));
+        refl.setColorAt(i, tmp.copy(red).multiplyScalar((0.15 + 0.35 * w) * pw + 0.5 * eh));
       }
       tubes.instanceColor.needsUpdate = true;
       refl.instanceColor.needsUpdate = true;

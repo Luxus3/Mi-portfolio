@@ -194,6 +194,88 @@ function drawContact(ctx, t) {
   if (Math.floor(t * 2) % 2 === 0) ctx.fillRect(x0 + pw + 12, 424, 22, 46);
 }
 
+// --- chaos modes: drawn once when the mode changes ---
+function bg(ctx, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+}
+
+function drawNoSignal(ctx) {
+  bg(ctx, '#020202');
+  ctx.textAlign = 'center';
+  ctx.font = font(96, '800');
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillText('NO SIGNAL', W / 2, H / 2);
+  ctx.font = font(28);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillText('check input cable', W / 2, H / 2 + 56);
+}
+
+function drawBooting(ctx) {
+  bg(ctx, '#040404');
+  ctx.font = font(26);
+  const lines = [
+    'BIOS v2.4.1  POST ... ok',
+    '[  OK  ] Started power-supply monitor',
+    '[  OK  ] Reached target Local File Systems',
+    '[  OK  ] Started Network Manager',
+    '[ ...  ] Starting portfolio.service'
+  ];
+  ctx.fillStyle = CSS.dim;
+  lines.forEach((l, i) => ctx.fillText(l, PAD, 130 + i * 40));
+  ctx.font = font(84, '800');
+  ctx.fillStyle = CSS.amber;
+  ctx.fillText('BOOTING...', PAD, 460);
+  ctx.fillStyle = '#141414';
+  ctx.fillRect(PAD, 520, W - PAD * 2, 24);
+  ctx.fillStyle = CSS.amber;
+  ctx.fillRect(PAD, 520, (W - PAD * 2) * 0.55, 24);
+}
+
+const hex = (n) => Math.floor(Math.random() * 16 ** n).toString(16).padStart(n, '0');
+const TRACE = ['dump_stack', 'panic', 'do_exit', 'do_page_fault', 'irq_exit', 'smp_apic_timer_interrupt', 'ret_from_fork'];
+
+function drawPanic(ctx) {
+  bg(ctx, '#120000');
+  ctx.strokeStyle = CSS.red;
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, W - 6, H - 6);
+  ctx.font = font(52, '800');
+  ctx.fillStyle = CSS.red;
+  ctx.fillText('KERNEL PANIC — not syncing', PAD, 100);
+  ctx.font = font(23);
+  ctx.fillStyle = '#ff8a80';
+  const lines = [
+    'Fatal exception in interrupt handler',
+    `CPU: 3 PID: 1 Comm: swapper/3 Tainted: G D`,
+    `RIP: 0010:[<ffffffff${hex(8)}>] ${TRACE[1]}+0x${hex(2)}/0x${hex(3)}`,
+    `RSP: 0018:ffff${hex(12)}  EFLAGS: 00010246`,
+    `RAX: ${hex(16)} RBX: ${hex(16)}`,
+    `CR2: 0000${hex(12)} CR3: 0000${hex(12)}`,
+    'Call Trace:'
+  ];
+  let y = 170;
+  for (const l of lines) {
+    ctx.fillText(l, PAD, y);
+    y += 36;
+  }
+  for (let i = 0; i < 8; i++) {
+    ctx.fillText(` [<ffffffff${hex(8)}>] ${TRACE[i % TRACE.length]}+0x${hex(2)}/0x${hex(3)}`, PAD, y);
+    y += 32;
+  }
+  ctx.fillStyle = CSS.red;
+  ctx.fillText('---[ end Kernel panic - not syncing ]---', PAD, y + 16);
+}
+
+const MODES = {
+  off: (ctx) => bg(ctx, '#000'),
+  nosignal: drawNoSignal,
+  booting: drawBooting,
+  panic: drawPanic
+};
+
 function makeScreen(draw, aniso, z = null) {
   const canvas = document.createElement('canvas');
   canvas.width = W;
@@ -206,9 +288,18 @@ function makeScreen(draw, aniso, z = null) {
     tex,
     z,
     last: -1,
+    mode: 'normal',
+    setMode(mode) {
+      if (s.mode === mode) return;
+      s.mode = mode;
+      s.paint(s.last > 0 ? s.last : 0);
+    },
     paint(t = 0) {
-      draw(ctx, t);
-      scanlines(ctx);
+      ctx.save();
+      if (s.mode === 'normal') draw(ctx, t);
+      else MODES[s.mode](ctx);
+      ctx.restore();
+      if (s.mode !== 'off') scanlines(ctx);
       tex.needsUpdate = true;
       s.last = t;
     }
@@ -230,10 +321,14 @@ export function createScreens(aniso = 4) {
   return {
     textures: Object.fromEntries(Object.entries(screens).map(([k, v]) => [k, v.tex])),
     repaintAll: () => all.forEach((s) => s.paint(s.last > 0 ? s.last : 0)),
+    // mode: normal | off | nosignal | booting | panic. Redraws only when it changes.
+    setMode(mode, names = null) {
+      for (const k in screens) if (!names || names.includes(k)) screens[k].setMode(mode);
+    },
     // Animated screens repaint at ~8fps and only when the camera is near.
     animate(t, camZ) {
       for (const s of all) {
-        if (s.z !== null && Math.abs(camZ - s.z) < 30 && t - s.last > 0.12) s.paint(t);
+        if (s.mode === 'normal' && s.z !== null && Math.abs(camZ - s.z) < 30 && t - s.last > 0.12) s.paint(t);
       }
     }
   };

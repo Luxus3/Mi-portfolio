@@ -38,6 +38,7 @@
   <header id="top" class="bar">
     <a class="brand" href="#hero" aria-label="Lucio, back to top">LUCIO<span>.local</span></a>
     <div class="tools">
+      <button type="button" id="btn-chaos" class="btn btn-chaos" hidden aria-label="Chaos: cut the power to the datacenter">&#9888; CHAOS</button>
       <button type="button" id="btn-term" class="btn" aria-haspopup="dialog" aria-controls="term">&gt;_ TERMINAL</button>
       <button type="button" id="btn-sound" class="btn" aria-pressed="false">SOUND: OFF</button>
     </div>
@@ -121,6 +122,7 @@
   <div id="hud" class="hud" aria-hidden="true">
     <span id="hud-text">DOOR 00 — ENTRANCE</span>
     <span class="hud-bar"><i id="hud-fill"></i></span>
+    <span id="hud-ping" class="hud-ping">PING --</span>
   </div>
   <div id="scroll-hint" class="scroll-hint" aria-hidden="true"><span>SCROLL</span><i></i></div>
   <div id="ticker" class="ticker" aria-hidden="true"><span class="tk-tag">LOG</span><span id="tk-text"></span></div>
