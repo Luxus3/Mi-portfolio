@@ -31,7 +31,7 @@ export const CONTENT = {
   },
   stack: {
     tag: 'STACK',
-    items: ['Linux', 'Docker', 'Nginx', 'Networking', 'SQL', 'Git', 'Bash', 'CI/CD', 'Cloud', 'Monitoring', 'Hardware assembly']
+    items: ['Linux', 'Docker', 'Nginx', 'Networking', 'SQL', 'Git', 'Bash', 'CI/CD', 'Cloud', 'Monitoring', 'Hardware assembly', 'C++', 'Python', 'Basic cybersecurity']
   },
   services: {
     tag: 'WHAT I DO',
